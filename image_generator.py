@@ -24,7 +24,7 @@ def create_blank_image(image_width, image_height):
 
 
 def insert_circle(image_array, image_width, image_height,
-                  x_coord, y_coord, radius, color):
+                  x_coord, y_coord, radius, color, verbose=False):
     """
     Originally from https://stackoverflow.com/questions/23667646/python-replace-zeros-in-matrix-with-circle-of-ones
     Generates a circle on an array of image data
@@ -35,8 +35,10 @@ def insert_circle(image_array, image_width, image_height,
     :param y_coord: y-coordinate of center of circle, must be positive integer for array index
     :param radius: radius of cirlce to be drawn
     :param color: array of 3 int values that describes the color of the circle to be drawn
+    :param verbose: Boolean to print progress statements
     """
-    print('inserting circle at ({},{})'.format(x_coord, y_coord))
+    if verbose:
+        print('inserting circle at ({},{})'.format(x_coord, y_coord))
     image_array = np.array(image_array)
 
     # Create index arrays to z
@@ -87,8 +89,8 @@ def save_png_file(image_name, png_array, image_width, image_height):
     print('Saved {}'.format(image_name))
 
 
-def generate_data_samples(motion_type, x_points, y_points, image_width, image_height,
-                          circle_radius, circle_color, save_png=True):
+def generate_samples(motion_type, x_points, y_points, image_width, image_height,
+                     circle_radius, circle_color, save_png=True):
     """
     Generates a sequence of png files based on x and y points provided.
     :param motion_type: String name of the type of motion the sequence depicts
@@ -129,3 +131,20 @@ def generate_gif(motion_type):
     img, *imgs = [Image.open(f) for f in sorted(file_list)]
     img.save(fp=motion_type + ' motion.gif', format='GIF', append_images=imgs,
              save_all=True, duration=100, loop=0)
+
+
+width = 100
+height = width
+sample_size = 50
+motion_name = 'circle (triangular generation)'
+
+start_point = 0
+end_point = width
+domain = np.linspace(start_point, end_point, num=sample_size)
+x_values = [int((width / 3) * (1 + point)) for point in np.cos(domain)]
+y_values = [int((width / 3) * (1 + point)) for point in np.sin(domain)]
+
+radius = 5
+color = [255, 0, 0]
+png_collection = generate_samples(motion_name, x_values, y_values, width, height, radius, color, save_png=False)
+# ig.generate_gif(motion_name)

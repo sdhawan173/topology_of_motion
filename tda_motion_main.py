@@ -1,19 +1,17 @@
-import numpy as np
-import image_generator as ig
+import matplotlib.pyplot as plt
+import image_preprocessing as ipp
 
 
-width = 100
-height = width
-sample_size = 50
-motion_name = 'circle (triangular generation)'
-start_point = 0
-end_point = width
-domain = np.linspace(start_point, end_point, num=sample_size)
-x_values = [int((width / 3) * (1 + point)) for point in np.cos(domain)]
-y_values = [int((width / 3) * (1 + point)) for point in np.sin(domain)]
-radius = 5
-color = [255, 0, 0]
-png_collection = ig.generate_data_samples(motion_name, x_values, y_values,
-                                          width, height, radius, color,
-                                          save_png=True)
-ig.generate_gif(motion_name)
+ext = '.png'
+sample_directories = ipp.get_sample_dirs()
+# sample_index = choose_index(ext, sample_dirs = sample_directories)
+sample_index = 0
+png_file_names = ipp.get_file_list(sample_directories, sample_index, extension='.png')
+all_png_data = ipp.get_sample_data(sample_directories, sample_index, png_file_names)
+svd_reduction = ipp.transform_data(all_png_data)
+plt.scatter(
+    svd_reduction[0, :],
+    svd_reduction[1, :],
+    s=5
+)
+plt.show()
