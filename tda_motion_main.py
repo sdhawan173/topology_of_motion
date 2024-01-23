@@ -6,8 +6,6 @@ width = 100
 height = width
 sample_size = 50
 motion_name = 'circle (triangular generation)'
-ig.generate_gif(motion_name)
-input('wait')
 start_point = 0
 end_point = width
 domain = np.linspace(start_point, end_point, num=sample_size)
@@ -17,5 +15,5 @@ radius = 5
 color = [255, 0, 0]
 png_collection = ig.generate_data_samples(motion_name, x_values, y_values,
                                           width, height, radius, color,
-                                          save_png=False)
-# ig.generate_gif(png_collection)
+                                          save_png=True)
+ig.generate_gif(motion_name)

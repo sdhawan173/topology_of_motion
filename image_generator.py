@@ -110,7 +110,7 @@ def generate_data_samples(motion_type, x_points, y_points, image_width, image_he
         image_string = motion_type + ' motion'
         if image_count < 10:
             count_string = '00' + str(image_count)
-        if image_count < 100:
+        elif image_count < 100:
             count_string = '0' + str(image_count)
         image_string = count_string + ' - ' + image_string
         png_data = convert_to_png(image_data, image_width, image_height)
@@ -128,4 +128,4 @@ def generate_gif(motion_type):
     file_list = glob.glob('*' + motion_type + '*.png')
     img, *imgs = [Image.open(f) for f in sorted(file_list)]
     img.save(fp=motion_type + ' motion.gif', format='GIF', append_images=imgs,
-             save_all=True, duration=200, loop=0)
+             save_all=True, duration=100, loop=0)
