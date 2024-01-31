@@ -166,10 +166,11 @@ def clockwise_sort(point, origin=None, reference_vector=None):
     return angle, vector_length
 
 
-def circle_motion(motion_width, num_points):
-    start_point = 0
-    end_point = motion_width
-    domain = np.linspace(start_point, end_point, num=num_points)
+def circle_motion(motion_width, num_points, domain=None):
+    if domain is None:
+        start_point = 0
+        end_point = motion_width
+        domain = np.linspace(start_point, end_point, num=num_points)
     point_list = [[x_point, y_point] for x_point, y_point in zip(np.cos(domain), np.sin(domain))]
     point_list = sorted(point_list, key=clockwise_sort)
     x = [matrix_grid_reparameterize(point[0], motion_width) for point in point_list]
@@ -177,14 +178,29 @@ def circle_motion(motion_width, num_points):
     return x, y
 
 
+def sine_motion(domain_values):
+    x = domain_values
+    y = [int(matrix_grid_reparameterize(y_val, width)) for y_val in np.sin(0.125 * x)]
+    return x, y
+
+
+def horizontal_motion(domain_values):
+    return domain_values, [50 for _ in range(len(domain_values))]
+
+
 radius = 5
 color = [255, 0, 0]
 width = 100
 height = width
 sample_size = 50
-motion_name = 'circle (radial generation)'
-
-x_values, y_values = circle_motion(width, sample_size)
+motion_name = 'linear diagonal'
+start = 0
+end = width
+domain = np.linspace(start, end, num=sample_size)
+# x_values, y_values = circle_motion(width, sample_size)
+# x_values, y_values = sine_motion(domain)
+# x_values, y_values = horizontal_motion(domain)
+x_values, y_values = (domain, domain)
 
 png_collection = generate_samples(motion_name, x_values, y_values, width, height, radius, color, save_png=True)
 generate_gif(motion_name)
