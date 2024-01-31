@@ -67,10 +67,10 @@ def get_file_list(sample_dirs, dir_index, extension):
 
 def get_sample_data(sample_dirs, dir_index, file_names):
     width, height = pil.open(sample_dirs[dir_index] + '/' + file_names[0]).size
-    sample_size = len(png_file_names)
+    sample_size = len(file_names)
     all_png_data = np.zeros((width * height, sample_size), int)
     for index in range(sample_size):
-        temp_data = pil.open(sample_directories[dir_index] + '/' + file_names[index])
+        temp_data = pil.open(sample_dirs[dir_index] + '/' + file_names[index])
         temp_data = np.asarray(temp_data.convert('L')).flatten()
         all_png_data[:, index] = temp_data[:, ]
     return all_png_data

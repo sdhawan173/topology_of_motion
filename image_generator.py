@@ -1,7 +1,9 @@
+import math
 import numpy as np
 import png
 from PIL import Image
 import glob
+import matplotlib.pyplot as plt
 
 
 def create_blank_image(image_width, image_height):
@@ -24,7 +26,7 @@ def create_blank_image(image_width, image_height):
 
 
 def insert_circle(image_array, image_width, image_height,
-                  x_coord, y_coord, radius, color, verbose=False):
+                  x_coord, y_coord, circle_radius, circle_color, verbose=False):
     """
     Originally from https://stackoverflow.com/questions/23667646/python-replace-zeros-in-matrix-with-circle-of-ones
     Generates a circle on an array of image data
@@ -33,8 +35,8 @@ def insert_circle(image_array, image_width, image_height,
     :param image_height: height out output image
     :param x_coord: x-coordinate of center of circle, must be positive integer for array index
     :param y_coord: y-coordinate of center of circle, must be positive integer for array index
-    :param radius: radius of cirlce to be drawn
-    :param color: array of 3 int values that describes the color of the circle to be drawn
+    :param circle_radius: radius of cirlce to be drawn
+    :param circle_color: array of 3 int values that describes the color of the circle to be drawn
     :param verbose: Boolean to print progress statements
     """
     if verbose:
@@ -48,7 +50,7 @@ def insert_circle(image_array, image_width, image_height,
     dist = np.sqrt((I - x_coord) ** 2 + (J - y_coord) ** 2)
 
     # Assign value of 1 to those points where dist<radius:
-    image_array[np.where(dist <= radius)] = color
+    image_array[np.where(dist <= circle_radius)] = circle_color
 
     return np.asarray(image_array)
 
@@ -74,19 +76,21 @@ def convert_to_png(image_array, image_width, image_height):
     return png_array
 
 
-def save_png_file(image_name, png_array, image_width, image_height):
+def save_png_file(image_name, png_array, image_width, image_height, verbose=False):
     """
     saves png file to the current working directory
     :param image_name: file name of png to be saved
     :param png_array: image data for png file in desired png format
     :param image_width: width of output image
     :param image_height: height of output image
+    :param verbose: Boolean to print progress statements
     :return:
     """
     with open(image_name + '.png', 'wb') as data_sample:
         w = png.Writer(image_width, image_height, greyscale=False, alpha='RGBA')
         w.write(data_sample, png_array)
-    print('Saved {}'.format(image_name))
+    if verbose:
+        print('Saved {}'.format(image_name))
 
 
 def generate_samples(motion_type, x_points, y_points, image_width, image_height,
@@ -133,18 +137,54 @@ def generate_gif(motion_type):
              save_all=True, duration=100, loop=0)
 
 
-width = 100
-height = width
-sample_size = 50
-motion_name = 'circle (triangular generation)'
+def matrix_grid_reparameterize(coord, motion_width):
+    return int((motion_width * coord * 0.4) + motion_width/2)
 
-start_point = 0
-end_point = width
-domain = np.linspace(start_point, end_point, num=sample_size)
-x_values = [int((width / 3) * (1 + point)) for point in np.cos(domain)]
-y_values = [int((width / 3) * (1 + point)) for point in np.sin(domain)]
+
+def clockwise_sort(point, origin=None, reference_vector=None):
+    """
+    from https://stackoverflow.com/questions/41855695/sorting-list-of-two-dimensional-coordinates-by-clockwise-angle-using-python
+    :param point: coordinate in the form of [x, y]
+    :param origin: origin of point grid, default [0,0]
+    :param reference_vector:
+    :return: x, y sorted in clockwise order
+    """
+    if origin is None:
+        origin = [0, 0]
+    if reference_vector is None:
+        reference_vector = [0, 1]
+    vector = [point[i] - origin[i] for i in range(2)]
+    vector_length = math.hypot(vector[0], vector[1])
+    if vector_length == 0:
+        return -math.pi, 0
+    vector_normalized = [vector[0] / vector_length, vector[1] / vector_length]
+    dot_product = sum([vector_normalized[i] * reference_vector[i] for i in range(2)])
+    difference_product = reference_vector[1] * vector_normalized[0] - reference_vector[0] * vector_normalized[1]
+    angle = math.atan2(difference_product, dot_product)
+    if angle < 0:
+        return 2 * math.pi + angle, vector_length
+    return angle, vector_length
+
+
+def circle_motion(motion_width, num_points):
+    start_point = 0
+    end_point = motion_width
+    domain = np.linspace(start_point, end_point, num=num_points)
+    point_list = [[x_point, y_point] for x_point, y_point in zip(np.cos(domain), np.sin(domain))]
+    point_list = sorted(point_list, key=clockwise_sort)
+    x = [matrix_grid_reparameterize(point[0], motion_width) for point in point_list]
+    y = [matrix_grid_reparameterize(point[1], motion_width) for point in point_list]
+    return x, y
+
 
 radius = 5
 color = [255, 0, 0]
-png_collection = generate_samples(motion_name, x_values, y_values, width, height, radius, color, save_png=False)
-# ig.generate_gif(motion_name)
+width = 100
+height = width
+sample_size = 50
+motion_name = 'circle (radial generation)'
+
+x_values, y_values = circle_motion(width, sample_size)
+
+png_collection = generate_samples(motion_name, x_values, y_values, width, height, radius, color, save_png=True)
+generate_gif(motion_name)
