@@ -1,6 +1,7 @@
 import os
 import numpy as np
 import PIL.Image as pil
+import matplotlib.pyplot as plt
 
 
 def file_search(extension, dir_string=os.getcwd()):
@@ -39,13 +40,13 @@ def get_sample_dirs():
     for directory in all_subdirs:
         if directory.__contains__('Case'):
             sample_dirs.append(directory)
-    return sample_dirs
+    return sorted(sample_dirs)
 
 
 def choose_index(extension, sample_dirs=None):
     if sample_dirs:
-        for i in sample_dirs:
-            print(i)
+        for i in range(len(sample_dirs)):
+            print('{}: {}'.format(i, sample_dirs[i]))
     # Select file, print output to confirm choice
     chosen_index = input('Choose \'' + extension + '\' file by entering the corresponding number:\n')
     if int(chosen_index) < 10 and len(chosen_index) >= 2:
@@ -60,7 +61,7 @@ def choose_index(extension, sample_dirs=None):
 def get_file_list(sample_dirs, dir_index, extension):
     file_list = []
     for file_name in next(os.walk(sample_dirs[dir_index]))[2]:  # 2 = list all files
-        if file_name.__contains__(extension):
+        if file_name.__contains__(extension) and not file_name.__contains__('SVD'):
             file_list.append(file_name)
     return sorted(file_list)
 
@@ -77,6 +78,7 @@ def get_sample_data(sample_dirs, dir_index, file_names):
 
 
 def transform_data(all_png_data):
+    print('Transforming data with SVD ...')
     axisNum = 1  # axis=1, work along the rows, axis=0, work along the rows
     mean_data = all_png_data.mean(axisNum, keepdims=True)
     centered_data = all_png_data - mean_data
@@ -85,3 +87,21 @@ def transform_data(all_png_data):
     sigma = np.hstack([np.diag(S), np.zeros((N, 0))])
     reduced_data = (sigma @ VT)[:2, :]
     return reduced_data
+
+
+def save_score_plot(sample_dir, dir_index, svd_reduction):
+    pwd = os.getcwd()
+    motion_type = sample_dir[dir_index].split('- ')[-1]
+    plot_type = 'SVD score plot'
+    output_name = (pwd + '/' + sample_dir[dir_index] + '/' + plot_type +
+                   ' - ' + motion_type + '.png')
+    fig, ax = plt.subplots()
+    ax.scatter(
+        svd_reduction[0, :],
+        svd_reduction[1, :],
+        s=5
+    )
+    plt.xlabel('Principal Component 1')
+    plt.ylabel('Principal Component 2')
+    plt.title(motion_type + ' ' + plot_type)
+    plt.savefig(output_name, bbox_inches='tight')
