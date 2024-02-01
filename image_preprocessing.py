@@ -144,5 +144,4 @@ def save_score_plot(svd_reduction, sample_dir, dir_index):
     plt.xlabel('Principal Component 1')
     plt.ylabel('Principal Component 2')
     plt.title(motion_type + ' ' + plot_type)
-    plt.show()
-    # plt.savefig(output_name, bbox_inches='tight')
+    plt.savefig(output_name, bbox_inches='tight')
