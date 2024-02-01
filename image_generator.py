@@ -3,7 +3,6 @@ import numpy as np
 import png
 from PIL import Image
 import glob
-import matplotlib.pyplot as plt
 
 
 def create_blank_image(image_width, image_height):
