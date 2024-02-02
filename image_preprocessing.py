@@ -40,7 +40,7 @@ def transform_data(all_png_data, sample_dir, dir_index):
     return reduced_data
 
 
-def save_score_plot(svd_reduction, sample_dir, dir_index):
+def save_score_plot(svd_reduction, sample_dir, dir_index, run_file_check=False):
     motion_type = sample_dir[dir_index].split('- ')[-1]
     plot_type = 'SVD score plot'
     extension = '.png'
@@ -58,8 +58,4 @@ def save_score_plot(svd_reduction, sample_dir, dir_index):
     plt.xlabel('Principal Component 1')
     plt.ylabel('Principal Component 2')
     plt.title(motion_type + ' ' + plot_type)
-    file_exists, file_dir = fc.file_check(file_name, sample_dir, dir_index, extension)
-    if file_exists:
-        plt.show()
-    elif not file_exists:
-        plt.savefig(output_name + extension, bbox_inches='tight')
+    plt.savefig(output_name + extension, bbox_inches='tight')
