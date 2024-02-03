@@ -40,22 +40,41 @@ def transform_data(all_png_data, sample_dir, dir_index):
     return reduced_data
 
 
-def save_score_plot(svd_reduction, sample_dir, dir_index, run_file_check=False):
-    motion_type = sample_dir[dir_index].split('- ')[-1]
-    plot_type = 'SVD score plot'
-    extension = '.png'
-    file_name = plot_type + ' - ' + motion_type
-    output_name = PWD + '/' + sample_dir[dir_index] + '/' + file_name
+def save_score_plot(svd_reduction, sample_dir, dir_index):
     fig, ax = plt.subplots()
+    indicies = [i for i in range(len(svd_reduction[0, :]))]
+    labels = [str(i) for i in indicies]
+
+    norm_color_values = np.array(indicies)/max(indicies)
+    colors = [plt.get_cmap('Reds')(value) for value in norm_color_values]
     ax.set_facecolor('black')
     fig.patch.set_facecolor('black')
-    ax.scatter(
+
+    score_plot = ax.scatter(
         svd_reduction[0, :],
         svd_reduction[1, :],
         s=5,
-        c='red'
+        c=indicies,
+        cmap='Reds',
+        vmax=max(indicies)
     )
+    for label, x, y, color in zip(labels, svd_reduction[0, :], svd_reduction[1, :], colors):
+        ax.annotate(label, (x, y), c=color)
+    color_bar = plt.colorbar(score_plot,
+                             ax=ax,
+                             ticks=np.arange(
+                                 start=0,
+                                 stop=max(indicies),
+                                 step=5)
+                             )
+    color_bar.set_label('Frame Count')
+    motion_type = sample_dir[dir_index].split('- ')[-1]
+    plot_type = 'SVD score plot'
+    extension = '.svg'
+    file_name = plot_type + ' - ' + motion_type
+    output_name = PWD + '/' + sample_dir[dir_index] + '/' + file_name
     plt.xlabel('Principal Component 1')
     plt.ylabel('Principal Component 2')
     plt.title(motion_type + ' ' + plot_type)
     plt.savefig(output_name + extension, bbox_inches='tight')
+    plt.show()

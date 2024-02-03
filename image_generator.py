@@ -136,13 +136,14 @@ def generate_gif(motion_type):
              save_all=True, duration=100, loop=0)
 
 
-def matrix_grid_reparameterize(coord, motion_width):
-    return int((motion_width * coord * 0.4) + motion_width/2)
+def trig_reparameterize(coord, motion_width):
+    return int((motion_width * coord * 0.4) + motion_width / 2)
 
 
 def clockwise_sort(point, origin=None, reference_vector=None):
     """
-    from https://stackoverflow.com/questions/41855695/sorting-list-of-two-dimensional-coordinates-by-clockwise-angle-using-python
+    from: "https://stackoverflow.com/questions/41855695/
+    sorting-list-of-two-dimensional-coordinates-by-clockwise-angle-using-python"
     :param point: coordinate in the form of [x, y]
     :param origin: origin of point grid, default [0,0]
     :param reference_vector:
@@ -172,19 +173,65 @@ def circle_motion(motion_width, num_points, domain=None):
         domain = np.linspace(start_point, end_point, num=num_points)
     point_list = [[x_point, y_point] for x_point, y_point in zip(np.cos(domain), np.sin(domain))]
     point_list = sorted(point_list, key=clockwise_sort)
-    x = [matrix_grid_reparameterize(point[0], motion_width) for point in point_list]
-    y = [matrix_grid_reparameterize(point[1], motion_width) for point in point_list]
+    x = [trig_reparameterize(point[0], motion_width) for point in point_list]
+    y = [trig_reparameterize(point[1], motion_width) for point in point_list]
     return x, y
 
 
-def sine_motion(domain_values):
-    x = domain_values
-    y = [int(matrix_grid_reparameterize(y_val, width)) for y_val in np.sin(0.125 * x)]
+def sine_motion(domain):
+    x = domain
+    y = [int(trig_reparameterize(y_val, width)) for y_val in np.sin(0.125 * x)]
     return x, y
 
 
-def horizontal_motion(domain_values):
-    return domain_values, [50 for _ in range(len(domain_values))]
+def horizontal_motion(domain):
+    return domain, [50 for _ in range(len(domain))]
+
+
+def absolute_value(domain):
+    y = [int(y_val) for y_val in (domain - max(domain) / 2)]
+    y = np.abs(y)
+    return y
+
+
+def diamond(domain):
+    leftover_count = 0
+    if len(domain) % 4 != 0:
+        leftover_count = len(domain) % 4
+    down_right_x = [4*x for x in range(0, int(len(domain)//4))]
+    down_right_y = [x for x in reversed(down_right_x)]
+    up_right_x = [4*x for x in range(int(len(domain)//4), 2*int(len(domain)//4))]
+    up_right_y = [x for x in down_right_x]
+    up_left_x = [x for x in reversed(up_right_x)]
+    up_left_y = [x for x in up_right_x]
+    down_left_x = [x for x in reversed(down_right_x)]
+    down_left_y = [x for x in reversed(up_left_y)]
+    x_list = down_right_x + up_right_x + up_left_x + down_left_x + [down_left_x[-1]]*leftover_count
+    y_list = down_right_y + up_right_y + up_left_y + down_left_y + [down_left_y[-1]]*leftover_count
+    return x_list, y_list
+
+
+def vert_zigzag(domain):
+    leftover_count = 0
+    if len(domain) % 4 != 0:
+        leftover_count = len(domain) % 4
+    down_right = [int((max(domain) / 2) - 2*x) for x in domain[0:int(len(domain)//4)]]
+    up_right = [x for x in reversed(down_right)]
+    up_left = [int((max(domain) / 2) - 2*x + max(domain)/2) for x in reversed(domain[0:int(len(domain)//4)])]
+    down_left = [x for x in reversed(up_left)]
+    y = down_right + up_right + up_left + down_left + [down_left[-1]]*leftover_count
+    return y
+
+
+def no_motion(domain):
+    return [50 for _ in range(len(domain))]
+
+
+def horiz_backforth(domain):
+    x = [4*x_val for x_val in range(0, int(len(domain)/2))]
+    x = x + [x_val for x_val in reversed(x)]
+    y = [50 for _ in domain]
+    return x, y
 
 
 radius = 5
@@ -192,14 +239,18 @@ color = [255, 0, 0]
 width = 100
 height = width
 sample_size = 50
-motion_name = 'linear diagonal'
+motion_name = 'horizontal back and forth'
 start = 0
 end = width
-domain = np.linspace(start, end, num=sample_size)
+domain_values = np.linspace(start, end, num=sample_size)
 # x_values, y_values = circle_motion(width, sample_size)
-# x_values, y_values = sine_motion(domain)
-# x_values, y_values = horizontal_motion(domain)
-x_values, y_values = (domain, domain)
-
+# x_values, y_values = sine_motion(domain_values)
+# x_values, y_values = horizontal_motion(domain_values)
+# x_values, y_values = (domain_values, domain_values) #  x=y
+# x_values, y_values = (domain_values, absolute_value(domain_values))
+# x_values, y_values = diamond(domain_values)
+# x_values, y_values = (domain_values, vert_zigzag(domain_values))
+x_values, y_values = horiz_backforth(domain_values)
+# x_values, y_values = (no_motion(domain_values), no_motion(domain_values))
 png_collection = generate_samples(motion_name, x_values, y_values, width, height, radius, color, save_png=True)
 generate_gif(motion_name)
