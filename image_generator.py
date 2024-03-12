@@ -126,13 +126,13 @@ def generate_samples(motion_type, x_points, y_points, image_width, image_height,
     return png_data_collection
 
 
-def generate_gif(motion_type):
+def generate_gif(motion_type, extension='.png'):
     """
     Creates a gif file from the generated data samples
     """
-    file_list = glob.glob('*' + motion_type + '*.png')
+    file_list = glob.glob('*' + motion_type + '*' + extension)
     img, *imgs = [Image.open(f) for f in sorted(file_list)]
-    img.save(fp=motion_type + ' motion.gif', format='GIF', append_images=imgs,
+    img.save(fp=motion_type + '.gif', format='GIF', append_images=imgs,
              save_all=True, duration=100, loop=0)
 
 
@@ -178,7 +178,7 @@ def circle_motion(motion_width, num_points, domain=None):
     return x, y
 
 
-def sine_motion(domain):
+def sine_motion(domain, width):
     x = domain
     y = [int(trig_reparameterize(y_val, width)) for y_val in np.sin(0.125 * x)]
     return x, y
@@ -234,23 +234,16 @@ def horiz_backforth(domain):
     return x, y
 
 
-radius = 5
-color = [255, 0, 0]
-width = 100
-height = width
-sample_size = 50
-motion_name = 'horizontal back and forth'
-start = 0
-end = width
-domain_values = np.linspace(start, end, num=sample_size)
-# x_values, y_values = circle_motion(width, sample_size)
-# x_values, y_values = sine_motion(domain_values)
-# x_values, y_values = horizontal_motion(domain_values)
-# x_values, y_values = (domain_values, domain_values) #  x=y
-# x_values, y_values = (domain_values, absolute_value(domain_values))
-# x_values, y_values = diamond(domain_values)
-# x_values, y_values = (domain_values, vert_zigzag(domain_values))
-x_values, y_values = horiz_backforth(domain_values)
-# x_values, y_values = (no_motion(domain_values), no_motion(domain_values))
-png_collection = generate_samples(motion_name, x_values, y_values, width, height, radius, color, save_png=True)
-generate_gif(motion_name)
+def create_dataset(motion_name, radius=5, color=(255, 0, 0), width=100, height=100, sample_size=50, start=0, end=100):
+    domain_values = np.linspace(start, end, num=sample_size)
+    # x_values, y_values = circle_motion(width, sample_size)
+    # x_values, y_values = sine_motion(domain_values)
+    # x_values, y_values = horizontal_motion(domain_values)
+    # x_values, y_values = (domain_values, domain_values) #  x=y
+    # x_values, y_values = (domain_values, absolute_value(domain_values))
+    # x_values, y_values = diamond(domain_values)
+    # x_values, y_values = (domain_values, vert_zigzag(domain_values))
+    x_values, y_values = horiz_backforth(domain_values)
+    # x_values, y_values = (no_motion(domain_values), no_motion(domain_values))
+    generate_samples(motion_name, x_values, y_values, width, height, radius, color, save_png=True)
+    generate_gif(motion_name)

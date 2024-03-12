@@ -2,45 +2,35 @@ import os
 import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-import pickle as pkl
 import file_code as fc
 
 PWD = os.getcwd()
-COLOR = 'red'
+COLOR = 'white'
 mpl.rcParams['text.color'] = COLOR
-mpl.rcParams['axes.labelcolor'] = COLOR
+mpl.rcParams['axes.labelcolor'] = 'red'
+mpl.rcParams['axes.titlecolor'] = 'red'
 mpl.rcParams['axes.edgecolor'] = COLOR
 mpl.rcParams['xtick.color'] = COLOR
 mpl.rcParams['ytick.color'] = COLOR
 
 
 def transform_data(all_png_data, sample_dir, dir_index):
-    reduced_data = None
-    print('Checking for existing data file ... ', end="")
-    variable_name = 'reduced_data'
-    extension = '.pkl'
-    file_exists, file_dir = fc.file_check(variable_name, sample_dir, dir_index, extension)
-    if file_exists:
-        print('\'.pkl\' file found!')
+    print('Transforming data with SVD ...')
+    axisNum = 1  # axis=1, work along the rows, axis=0, work along the rows
+    print('-----Centering data ...')
+    mean_data = all_png_data.mean(axisNum, keepdims=True)
+    centered_data = all_png_data - mean_data
+    print('-----Running svd ...')
+    U, S, VT = np.linalg.svd(centered_data)
+    D, N = centered_data.shape
+    sigma = np.hstack([np.diag(S), np.zeros((N, 0))])
+    reduced_data = (sigma @ VT)[:2, :]
 
-        reduced_data = pkl.load(open(file_dir, 'rb'))
-    elif not file_exists:
-        print('\'.pkl\' file not found.')
-
-        print('Transforming data with SVD ...')
-        axisNum = 1  # axis=1, work along the rows, axis=0, work along the rows
-        mean_data = all_png_data.mean(axisNum, keepdims=True)
-        centered_data = all_png_data - mean_data
-        U, S, VT = np.linalg.svd(centered_data)
-        D, N = centered_data.shape
-        sigma = np.hstack([np.diag(S), np.zeros((N, 0))])
-        reduced_data = (sigma @ VT)[:2, :]
-
-        fc.pickle_dump(reduced_data, sample_dir, dir_index)
+    fc.pickle_dump(reduced_data, sample_dir, dir_index)
     return reduced_data
 
 
-def save_score_plot(svd_reduction, sample_dir, dir_index):
+def save_score_plot(svd_reduction, sample_dir, dir_index, show_plot=False):
     fig, ax = plt.subplots()
     indicies = [i for i in range(len(svd_reduction[0, :]))]
     labels = [str(i) for i in indicies]
@@ -71,10 +61,11 @@ def save_score_plot(svd_reduction, sample_dir, dir_index):
     motion_type = sample_dir[dir_index].split('- ')[-1]
     plot_type = 'SVD score plot'
     extension = '.svg'
-    file_name = plot_type + ' - ' + motion_type
-    output_name = PWD + '/' + sample_dir[dir_index] + '/' + file_name
+    file_name = motion_type + ' - ' + plot_type
+    output_name = fc.create_output_name(PWD, sample_dir, dir_index, file_name, extension)
     plt.xlabel('Principal Component 1')
     plt.ylabel('Principal Component 2')
     plt.title(motion_type + ' ' + plot_type)
-    plt.savefig(output_name + extension, bbox_inches='tight')
-    plt.show()
+    plt.savefig(output_name, bbox_inches='tight')
+    if show_plot:
+        plt.show()
