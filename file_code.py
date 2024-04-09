@@ -75,7 +75,12 @@ def get_sample_dirs(search_term='Case'):
 
 def get_image_file_names(sample_dirs, dir_index, search_term=None):
     file_list = []
-    for file_name in next(os.walk(sample_dirs[dir_index]))[2]:  # 2 = list all files
+    next_num = 2  # 2 = list all files
+    walk_input = sample_dirs[dir_index]
+    if len(sample_dirs) == 1:
+        walk_input = os.getcwd() + '/' + sample_dirs[0]
+    iterator = next(os.walk(walk_input))[next_num]
+    for file_name in iterator:
         if (file_name.__contains__('.png') or file_name.__contains__('.jpg')) and not search_term:
             file_list.append(file_name)
         elif (file_name.__contains__('.png') or file_name.__contains__('.jpg')) and file_name.__contains__(search_term):
@@ -83,8 +88,11 @@ def get_image_file_names(sample_dirs, dir_index, search_term=None):
     return sorted(file_list)
 
 
-def get_sample_data(sample_dirs, dir_index, file_names, max_dim=100):
-    orig_width, orig_height = pil_img.open(sample_dirs[dir_index] + '/' + file_names[0]).size
+def get_sample_data(sample_dirs, dir_index, file_names, max_dim=100, transform_type=None):
+    all_png_data = None
+
+    orig_width, orig_height = pil_img.open(os.getcwd() + '/' + sample_dirs[dir_index] + '/' + file_names[0]).size
+
     new_width = orig_width
     new_height = orig_height
     if orig_width or orig_height > 100:
@@ -95,13 +103,24 @@ def get_sample_data(sample_dirs, dir_index, file_names, max_dim=100):
         elif orig_height > orig_width:
             new_width = new_dim
             new_height = 100
+
     sample_size = len(file_names)
-    all_png_data = np.zeros((new_width * new_height, sample_size), int)
-    for index in range(sample_size):
-        temp_data = pil_img.open(sample_dirs[dir_index] + '/' + file_names[index])
-        temp_data = temp_data.resize((new_width, new_height), pil_img.Resampling.LANCZOS)
-        temp_data = np.asarray(temp_data.convert('L')).flatten()
-        all_png_data[:, index] = temp_data[:, ]
+    if transform_type == 'flatten':
+        all_png_data = np.zeros((sample_size, new_width * new_height), int)
+        for index in range(sample_size):
+            temp_data = pil_img.open(sample_dirs[dir_index] + '/' + file_names[index])
+            temp_data = temp_data.resize((new_width, new_height), pil_img.Resampling.LANCZOS)
+            temp_data = np.asarray(temp_data.convert('L')).flatten()
+            all_png_data[index, :] = temp_data[:, ]
+
+    if transform_type is None:
+        all_png_data = np.zeros((new_width * new_height, sample_size), int)
+        for index in range(sample_size):
+            temp_data = pil_img.open(sample_dirs[dir_index] + '/' + file_names[index])
+            temp_data = temp_data.resize((new_width, new_height), pil_img.Resampling.LANCZOS)
+            temp_data = np.asarray(temp_data.convert('L')).flatten()
+            all_png_data[:, index] = temp_data[:, ]
+
     return all_png_data
 
 
@@ -109,8 +128,8 @@ def create_output_name(working_dir, output_dir_list, output_dir_index, file_name
     return working_dir + '/' + output_dir_list[output_dir_index] + '/' + file_name + extension
 
 
-def pickle_dump(variable, sample_dir, dir_index):
+def pickle_dump(variable, file_suffix, sample_dir, dir_index):
     motion_type = sample_dir[dir_index].split('- ')[-1]
-    variable_name = motion_type + ' - ' + 'reduced_data'
+    variable_name = motion_type + ' - ' + file_suffix
     output_name = create_output_name(PWD, sample_dir, dir_index, variable_name, '.pkl')
     pkl.dump(variable, open(output_name, 'wb'))

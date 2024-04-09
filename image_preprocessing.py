@@ -25,8 +25,7 @@ def transform_data(all_png_data, sample_dir, dir_index):
     D, N = centered_data.shape
     sigma = np.hstack([np.diag(S), np.zeros((N, 0))])
     reduced_data = (sigma @ VT)[:2, :]
-
-    fc.pickle_dump(reduced_data, sample_dir, dir_index)
+    fc.pickle_dump(reduced_data, 'reduced_data', sample_dir, dir_index)
     return reduced_data
 
 

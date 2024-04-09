@@ -1,8 +1,11 @@
 import math
+import os
+
 import numpy as np
 import png
 from PIL import Image
 import glob
+import file_code as fc
 
 
 def create_blank_image(image_width, image_height):
@@ -112,28 +115,36 @@ def generate_samples(motion_type, x_points, y_points, image_width, image_height,
     for x_point, y_point in zip(x_points, y_points):
         image_data = create_blank_image(image_width, image_height)
         image_data = insert_circle(image_data, image_width, image_height, x_point, y_point, circle_radius, circle_color)
-        image_string = motion_type + ' motion'
+        image_string = motion_type
         if image_count < 10:
             count_string = '00' + str(image_count)
         elif image_count < 100:
             count_string = '0' + str(image_count)
-        image_string = count_string + ' - ' + image_string
+        elif image_count > 100:
+            count_string = str(image_count)
+        image_string = image_string + ' - ' + count_string
         png_data = convert_to_png(image_data, image_width, image_height)
         png_data_collection.append(png_data)
         if save_png:
-            save_png_file(image_string, png_data, image_width, image_height)
+            save_png_file('code_output/' + image_string, png_data, image_width, image_height)
         image_count += 1
     return png_data_collection
 
 
-def generate_gif(motion_type, extension='.png'):
+def generate_gif(motion_type):
     """
     Creates a gif file from the generated data samples
     """
-    file_list = glob.glob('*' + motion_type + '*' + extension)
-    img, *imgs = [Image.open(f) for f in sorted(file_list)]
-    img.save(fp=motion_type + '.gif', format='GIF', append_images=imgs,
-             save_all=True, duration=100, loop=0)
+    sample_dirs = fc.get_sample_dirs(search_term='code_output')
+    dir_index = 0
+    # for index, sample_dir in enumerate(sample_dirs):
+    #     if sample_dir.__contains__(motion_type):
+    #         dir_index = index
+    #         break
+    file_list = fc.get_image_file_names(sample_dirs, dir_index)
+    img, *imgs = [Image.open(os.getcwd() + '/' + sample_dirs[dir_index] + '/' + f) for f in file_list]
+    img.save(fp='code_output/' + motion_type + '.gif', format='GIF', append_images=imgs,
+             save_all=True, duration=10, loop=0)
 
 
 def trig_reparameterize(coord, motion_width):
@@ -198,16 +209,16 @@ def diamond(domain):
     leftover_count = 0
     if len(domain) % 4 != 0:
         leftover_count = len(domain) % 4
-    down_right_x = [4*x for x in range(0, int(len(domain)//4))]
+    down_right_x = [x for x in range(0, int(len(domain) // 4))]
     down_right_y = [x for x in reversed(down_right_x)]
-    up_right_x = [4*x for x in range(int(len(domain)//4), 2*int(len(domain)//4))]
+    up_right_x = [x for x in range(int(len(domain) // 4), 2 * (int(len(domain) // 4)))]
     up_right_y = [x for x in down_right_x]
     up_left_x = [x for x in reversed(up_right_x)]
     up_left_y = [x for x in up_right_x]
     down_left_x = [x for x in reversed(down_right_x)]
     down_left_y = [x for x in reversed(up_left_y)]
-    x_list = down_right_x + up_right_x + up_left_x + down_left_x + [down_left_x[-1]]*leftover_count
-    y_list = down_right_y + up_right_y + up_left_y + down_left_y + [down_left_y[-1]]*leftover_count
+    x_list = down_right_x + up_right_x + up_left_x + down_left_x + [down_left_x[-1]] * leftover_count
+    y_list = down_right_y + up_right_y + up_left_y + down_left_y + [down_left_y[-1]] * leftover_count
     return x_list, y_list
 
 
@@ -215,11 +226,11 @@ def vert_zigzag(domain):
     leftover_count = 0
     if len(domain) % 4 != 0:
         leftover_count = len(domain) % 4
-    down_right = [int((max(domain) / 2) - 2*x) for x in domain[0:int(len(domain)//4)]]
+    down_right = [int((max(domain) / 2) - 2 * x) for x in domain[0:int(len(domain) // 4)]]
     up_right = [x for x in reversed(down_right)]
-    up_left = [int((max(domain) / 2) - 2*x + max(domain)/2) for x in reversed(domain[0:int(len(domain)//4)])]
+    up_left = [int((max(domain) / 2) - 2 * x + max(domain) / 2) for x in reversed(domain[0:int(len(domain) // 4)])]
     down_left = [x for x in reversed(up_left)]
-    y = down_right + up_right + up_left + down_left + [down_left[-1]]*leftover_count
+    y = down_right + up_right + up_left + down_left + [down_left[-1]] * leftover_count
     return y
 
 
@@ -228,22 +239,26 @@ def no_motion(domain):
 
 
 def horiz_backforth(domain):
-    x = [4*x_val for x_val in range(0, int(len(domain)/2))]
+    x = [x_val for x_val in range(0, int(len(domain) / 2))]
     x = x + [x_val for x_val in reversed(x)]
     y = [50 for _ in domain]
     return x, y
 
 
-def create_dataset(motion_name, radius=5, color=(255, 0, 0), width=100, height=100, sample_size=50, start=0, end=100):
+def create_dataset(motion_name, radius=5, color=(255, 0, 0), width=100, height=100, sample_size=200, start=0, end=100):
     domain_values = np.linspace(start, end, num=sample_size)
-    # x_values, y_values = circle_motion(width, sample_size)
-    # x_values, y_values = sine_motion(domain_values)
+    # x_values, y_values = circle_motion(width, sample_size, domain=domain_values)
+    # x_values, y_values = sine_motion(domain_values, width)
     # x_values, y_values = horizontal_motion(domain_values)
-    # x_values, y_values = (domain_values, domain_values) #  x=y
+    # x_values, y_values = (domain_values, domain_values)  # x=y
     # x_values, y_values = (domain_values, absolute_value(domain_values))
     # x_values, y_values = diamond(domain_values)
     # x_values, y_values = (domain_values, vert_zigzag(domain_values))
-    x_values, y_values = horiz_backforth(domain_values)
-    # x_values, y_values = (no_motion(domain_values), no_motion(domain_values))
+    # x_values, y_values = horiz_backforth(domain_values)
+    x_values, y_values = (no_motion(domain_values), no_motion(domain_values))
     generate_samples(motion_name, x_values, y_values, width, height, radius, color, save_png=True)
-    generate_gif(motion_name)
+
+
+motion = 'horizontal back and forth motion'
+create_dataset(motion)
+generate_gif(motion)
