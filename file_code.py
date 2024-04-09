@@ -90,7 +90,6 @@ def get_image_file_names(sample_dirs, dir_index, search_term=None):
 
 def get_sample_data(sample_dirs, dir_index, file_names, max_dim=100, transform_type=None):
     all_png_data = None
-
     orig_width, orig_height = pil_img.open(os.getcwd() + '/' + sample_dirs[dir_index] + '/' + file_names[0]).size
 
     new_width = orig_width

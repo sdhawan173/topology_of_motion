@@ -46,8 +46,8 @@ data_list = load_preprocess_data(sample_dirs, transform_type=method)
 for data, data_directory in zip(data_list, sample_dirs):
     # Create file path strings to save persistence diagram and persistence points to
     motion_name = data_directory.split('- ')[-1]
-    print('Running {} ... '.format(motion_name))
-    save_path_base = os.getcwd() + '/code_output/' + motion_name
+    print('\nRunning {} ... '.format(motion_name))
+    save_path_base = os.getcwd() + '/' + data_directory + '/' + motion_name
     if method == 'svd':
         save_path_base += ' - SVD score plot'
     save_path_persdia = save_path_base + ' persdia' + '.svg'
@@ -60,9 +60,9 @@ for data, data_directory in zip(data_list, sample_dirs):
         input_data = data
     print('Creating Alpha Complex ...')
     # noinspection PyUnresolvedReferences
-    gudhi_complex = gudhi.AlphaComplex(points=input_data)
+    gudhi_complex = gudhi.RipsComplex(points=input_data)
     print('Creating Simplex Tree ...')
-    simplex_tree = gudhi_complex.create_simplex_tree(max_dimension=3)
+    simplex_tree = gudhi_complex.create_simplex_tree(max_dimension=2)
 
     # Create and save persistence points
     print('Creating Persistence Points ...')
@@ -72,5 +72,4 @@ for data, data_directory in zip(data_list, sample_dirs):
     # Create and save persistence diagram
     print('Plotting Persistence Diagram ...')
     pc.plot_persdia_main(persistence_points, motion_name, save_path_persdia, show_plot=False)
-    print('Completed run for {}'.format(motion_name))
-    input()
+    print('Completed run for {}\n'.format(motion_name))
