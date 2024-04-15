@@ -2,6 +2,7 @@ import os
 import gudhi
 import persdia_creator as pc
 import pickle as pkl
+import matplotlib.pyplot as plt
 import image_preprocessing as ipp
 import file_code as fc
 
@@ -16,7 +17,7 @@ def load_preprocess_data(sample_directories, transform_type, svd_pkl_string='red
         print('Current Directory: {}'.format(directory))
         print('Getting image data for all files ...')
         image_file_names = fc.get_image_file_names(sample_directories, dir_index)
-        all_png_data = fc.get_sample_data(sample_directories, dir_index, image_file_names, transform_type='flatten')
+        all_png_data = fc.get_sample_data(sample_directories, dir_index, image_file_names, transform_type=transform_type)
         loaded_data.append(all_png_data)
 
         svd_reduction = None
@@ -54,11 +55,11 @@ for data, data_directory in zip(data_list, sample_dirs):
     save_path_persdia_points = save_path_base + ' persistence' + '.txt'
 
     if method == 'svd':
-        # Create vietoris rips complex
         input_data = [(x, y) for x, y in zip(data[0, :], data[1, :])]
     else:
         input_data = data
-    print('Creating Alpha Complex ...')
+    print('Creating VR Complex ...')
+    # Create vietoris rips complex
     # noinspection PyUnresolvedReferences
     gudhi_complex = gudhi.RipsComplex(points=input_data)
     print('Creating Simplex Tree ...')

@@ -112,7 +112,7 @@ def get_sample_data(sample_dirs, dir_index, file_names, max_dim=100, transform_t
             temp_data = np.asarray(temp_data.convert('L')).flatten()
             all_png_data[index, :] = temp_data[:, ]
 
-    if transform_type is None:
+    if transform_type == 'svd':
         all_png_data = np.zeros((new_width * new_height, sample_size), int)
         for index in range(sample_size):
             temp_data = pil_img.open(sample_dirs[dir_index] + '/' + file_names[index])

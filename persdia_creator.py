@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 
 
-def create_base_plot(persistence_points, title, max_dim=2):
+def create_base_plot(persistence_points, title, max_dim=1):
     # Create Plot
     fig, ax = plt.subplots()
     cmap = matplotlib.cm.Set1.colors
