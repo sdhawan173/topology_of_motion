@@ -74,3 +74,5 @@ for data, data_directory in zip(data_list, sample_dirs):
     print('Plotting Persistence Diagram ...')
     pc.plot_persdia_main(persistence_points, motion_name, save_path_persdia, show_plot=False)
     print('Completed run for {}\n'.format(motion_name))
+
+fc.analyze_persistence_files()

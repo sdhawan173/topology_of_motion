@@ -1,4 +1,6 @@
 import os
+import math
+from collections import defaultdict
 import numpy as np
 import PIL.Image as pil_img
 import pickle as pkl
@@ -132,3 +134,63 @@ def pickle_dump(variable, file_suffix, sample_dir, dir_index):
     variable_name = motion_type + ' - ' + file_suffix
     output_name = create_output_name(PWD, sample_dir, dir_index, variable_name, '.pkl')
     pkl.dump(variable, open(output_name, 'wb'))
+
+
+def read_persistence():
+    persistence_file_paths = []
+    sample_dirs = get_sample_dirs()
+    for index, sample_dir in enumerate(sample_dirs):
+        next_num = 2  # 2 = list all files
+        walk_input = os.getcwd() + '/' + sample_dirs[index]
+        iterator = next(os.walk(walk_input))[next_num]
+        for file_name in iterator:
+            if file_name.__contains__('motion persistence'):
+                persistence_file_paths.append(walk_input + '/' + file_name)
+                break
+    return persistence_file_paths
+
+
+def parse_persistence(persistence_file):
+    read_file = []
+    opened_file = open(persistence_file, 'r')
+    for line in opened_file:
+        temp_line = line.split('\n')[0]
+        temp_line = temp_line.replace('(', '').replace(')', '').split(', ')
+        h_k = int(temp_line[0])
+        birth = float(temp_line[1])
+        if temp_line[2] == 'inf':
+            death = math.inf
+        else:
+            death = float(temp_line[2])
+        persistence_entry = [h_k, (birth, death)]
+        read_file.append(persistence_entry)
+    opened_file.close()
+    return read_file
+
+
+def analyze_persistence_files():
+    file_paths = read_persistence()
+    all_persistence_data = []
+    for file_path in file_paths:
+        all_persistence_data.append(parse_persistence(file_path))
+
+    all_unique_persistence = []
+    for data, file_path in zip(all_persistence_data, file_paths):
+        frequency_dict = defaultdict(int)
+
+        for entry in data:
+            frequency_dict[tuple(entry)] += 1
+
+        unique_persistence = [[freq, entry] for entry, freq in frequency_dict.items()]
+
+        point_count = 0
+        for entry in unique_persistence:
+            if entry[1][0] == 0:
+                point_count += entry[0]
+        print(file_path)
+        print(point_count)
+
+        all_unique_persistence.append(unique_persistence)
+
+
+analyze_persistence_files()
