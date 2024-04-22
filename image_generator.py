@@ -206,20 +206,20 @@ def circle_motion(motion_width, num_points, domain=None):
 
 def sine_motion(domain, width):
     x = domain
-    y = [int(trig_reparameterize(y_val, width)) for y_val in np.sin(0.5 * x)]
+    y = [int(trig_reparameterize(y_val, width)) for y_val in 0.5 * np.sin(0.125 * x)]
     return x, y
 
 
 def sinebackforth(domain, width):
     x = [x_val for x_val in domain] + [x_val for x_val in reversed(domain)]
-    y1 = [int(trig_reparameterize(y_val, width)) for y_val in np.sin(0.5 * domain)]
+    y1 = [int(trig_reparameterize(y_val, width)) for y_val in 0.5 * np.sin(0.125 * domain)]
     y2 = [y_val for y_val in reversed(y1)]
     y = y1 + y2
     return x, y
 
 
 def horizontal_motion(domain, width):
-    return domain, [width/2 for _ in range(len(domain))]
+    return domain, [width / 2 for _ in range(len(domain))]
 
 
 def absolute_value(domain):
@@ -262,9 +262,9 @@ def no_motion(domain, width):
 
 
 def horiz_backforth(width, frame_num):
-    x = [int(x_val) for x_val in np.linspace(0, width, num=int(frame_num / 2))]
+    x = [int(x_val) for x_val in np.linspace(0, width // 2, num=int(frame_num / 2))]
     x = x + [int(x_val) for x_val in reversed(x)]
-    y = [width/2 for _ in x]
+    y = [width / 2 for _ in x]
     return x, y
 
 
@@ -277,15 +277,15 @@ start = 0
 end = len1
 domain_values = np.linspace(start, end, num=sample_size)
 input_list = [
-    ['circle (radial generation)', circle_motion(len1, sample_size, domain=domain_values)],
+    # ['circle (radial generation)', circle_motion(len1, sample_size, domain=domain_values)],
     ['sine wave motion', sine_motion(domain_values, len1)],
-    ['linear horizontal motion', horizontal_motion(domain_values, len1)],
-    ['linear diagonal motion', (domain_values, domain_values)],
-    ['absolute value motion', (domain_values, absolute_value(domain_values))],
-    ['diamond motion', diamond(domain_values)],
-    ['vertical zigzag motion', (domain_values, vert_zigzag(domain_values))],
-    ['horizontal back and forth motion', horiz_backforth(len1, sample_size)],
-    ['stationary dot, no motion', (no_motion(domain_values, len1), no_motion(domain_values, len1))]
+    # ['linear horizontal motion', horizontal_motion(domain_values, len1)],
+    # ['linear diagonal motion', (domain_values, domain_values)],
+    # ['absolute value motion', (domain_values, absolute_value(domain_values))],
+    # ['diamond motion', diamond(domain_values)],
+    # ['vertical zigzag motion', (domain_values, vert_zigzag(domain_values))],
+    # ['horizontal back and forth motion', horiz_backforth(len1, sample_size)],
+    # ['stationary dot, no motion', (no_motion(domain_values, len1), no_motion(domain_values, len1))],
     ['sine wave back and forth motion', sinebackforth(domain_values, len1)]
 ]
 for data in input_list:

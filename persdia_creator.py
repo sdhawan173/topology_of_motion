@@ -1,8 +1,10 @@
+import os
 import math
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
+import gudhi
 
 
 def create_base_plot(persistence_points, title, max_dim=1):
@@ -168,6 +170,8 @@ def plot_persdia_main(persistence_points, title, save_dir, show_plot=False):
 
     if show_plot:
         plt.show()
+    plt.clf()
+    plt.close()
 
 
 def save_persistence_points(persistence_points, save_file_name):

@@ -1,10 +1,10 @@
 import os
 import gudhi
-import persdia_creator as pc
 import pickle as pkl
-import matplotlib.pyplot as plt
 import image_preprocessing as ipp
 import file_code as fc
+import persdia_creator as pc
+import image_generator
 
 
 def load_preprocess_data(sample_directories, transform_type, svd_pkl_string='reduced_data'):
@@ -17,7 +17,8 @@ def load_preprocess_data(sample_directories, transform_type, svd_pkl_string='red
         print('Current Directory: {}'.format(directory))
         print('Getting image data for all files ...')
         image_file_names = fc.get_image_file_names(sample_directories, dir_index)
-        all_png_data = fc.get_sample_data(sample_directories, dir_index, image_file_names, transform_type=transform_type)
+        all_png_data = fc.get_sample_data(sample_directories, dir_index, image_file_names, transform_type)
+
         loaded_data.append(all_png_data)
 
         svd_reduction = None
@@ -75,4 +76,4 @@ for data, data_directory in zip(data_list, sample_dirs):
     pc.plot_persdia_main(persistence_points, motion_name, save_path_persdia, show_plot=False)
     print('Completed run for {}\n'.format(motion_name))
 
-fc.analyze_persistence_files()
+# fc.analyze_persistence_files()

@@ -3,7 +3,11 @@ import math
 from collections import defaultdict
 import numpy as np
 import PIL.Image as pil_img
+import matplotlib.pyplot as plt
 import pickle as pkl
+import gudhi
+import persdia_creator as pc
+
 
 PWD = os.getcwd()
 
@@ -90,7 +94,57 @@ def get_image_file_names(sample_dirs, dir_index, search_term=None):
     return sorted(file_list)
 
 
-def get_sample_data(sample_dirs, dir_index, file_names, max_dim=100, transform_type=None):
+def save_motion_overlay(all_png_data, sample_size, new_height, new_width, sample_dirs, dir_index):
+    motion_name = sample_dirs[dir_index].split('- ')[-1]
+    overlay_save_name = motion_name + ' overlay'
+
+    all_png_data = all_png_data.astype(np.uint8)
+
+    # Reshape the flattened images back to their original size
+    images = all_png_data.reshape(sample_size, new_height, new_width)
+
+    # Initialize an empty canvas to stack the images
+    stacked_image = np.zeros((new_height, new_width), dtype=np.float32)
+
+    # Stack the images with transparency
+    for i in range(sample_size):
+        # Scale the image values by the number of images
+        scaled_image = images[i] / sample_size
+
+        # Add the scaled image to the stacked image
+        stacked_image += scaled_image
+
+    # Convert the stacked image to uint8
+    if motion_name.__contains__('cat'):
+        stacked_image_uint8 = stacked_image.astype(np.uint8)
+    else:
+        stacked_image_uint8 = (stacked_image * 255).astype(np.uint8)
+
+    # Convert the stacked image to PIL Image
+    stacked_image_pil = pil_img.fromarray(stacked_image_uint8)
+    # stacked_image_pil.show()  # Display the stacked image
+    stacked_image_pil.save(os.getcwd() + '/' + sample_dirs[dir_index] + '/' + overlay_save_name + '.jpg')
+    stacked_image_pil.close()
+
+    gudhi_complex = gudhi.RipsComplex(points=stacked_image)
+    simplex_tree = gudhi_complex.create_simplex_tree(max_dimension=2)
+    persistence_points = simplex_tree.persistence()
+    pc.save_persistence_points(
+        persistence_points,
+        os.getcwd() + '/' + sample_dirs[dir_index] + '/' + motion_name + ' overlay persdia points.txt'
+    )
+    gudhi.plot_persistence_diagram(persistence_points)
+    pc.plot_persdia_main(
+        persistence_points,
+        motion_name + ' images overlay',
+        os.getcwd() + '/' + sample_dirs[dir_index] + '/' + overlay_save_name + 'persdia.jpg',
+        show_plot=False
+    )
+    plt.clf()
+    plt.close()
+
+
+def get_sample_data(sample_dirs, dir_index, file_names, transform_type=None, max_dim=100):
     all_png_data = None
     orig_width, orig_height = pil_img.open(os.getcwd() + '/' + sample_dirs[dir_index] + '/' + file_names[0]).size
 
@@ -107,12 +161,14 @@ def get_sample_data(sample_dirs, dir_index, file_names, max_dim=100, transform_t
 
     sample_size = len(file_names)
     if transform_type == 'flatten':
+
         all_png_data = np.zeros((sample_size, new_width * new_height), int)
         for index in range(sample_size):
             temp_data = pil_img.open(sample_dirs[dir_index] + '/' + file_names[index])
             temp_data = temp_data.resize((new_width, new_height), pil_img.Resampling.LANCZOS)
             temp_data = np.asarray(temp_data.convert('L')).flatten()
             all_png_data[index, :] = temp_data[:, ]
+        save_motion_overlay(all_png_data, sample_size, new_height, new_width, sample_dirs, dir_index)
 
     if transform_type == 'svd':
         all_png_data = np.zeros((new_width * new_height, sample_size), int)
@@ -191,6 +247,3 @@ def analyze_persistence_files():
         print(point_count)
 
         all_unique_persistence.append(unique_persistence)
-
-
-analyze_persistence_files()
