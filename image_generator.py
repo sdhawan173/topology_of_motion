@@ -268,28 +268,29 @@ def horiz_backforth(width, frame_num):
     return x, y
 
 
-radius = 10
-color = (255, 0, 0)
-len1 = 100
-len2 = len1
-sample_size = 200
-start = 0
-end = len1
-domain_values = np.linspace(start, end, num=sample_size)
-input_list = [
-    # ['circle (radial generation)', circle_motion(len1, sample_size, domain=domain_values)],
-    ['sine wave motion', sine_motion(domain_values, len1)],
-    # ['linear horizontal motion', horizontal_motion(domain_values, len1)],
-    # ['linear diagonal motion', (domain_values, domain_values)],
-    # ['absolute value motion', (domain_values, absolute_value(domain_values))],
-    # ['diamond motion', diamond(domain_values)],
-    # ['vertical zigzag motion', (domain_values, vert_zigzag(domain_values))],
-    # ['horizontal back and forth motion', horiz_backforth(len1, sample_size)],
-    # ['stationary dot, no motion', (no_motion(domain_values, len1), no_motion(domain_values, len1))],
-    ['sine wave back and forth motion', sinebackforth(domain_values, len1)]
-]
-for data in input_list:
-    motion = data[0]
-    x_values, y_values = data[1]
-    generate_samples(motion, x_values, y_values, len1, len2, radius, color)
-    generate_gif(motion)
+def generate_samples_and_gif():
+    radius = 10
+    color = (255, 0, 0)
+    len1 = 100
+    len2 = len1
+    sample_size = 200
+    start = 0
+    end = len1
+    domain_values = np.linspace(start, end, num=sample_size)
+    input_list = [
+        ['circle (radial generation)', circle_motion(len1, sample_size, domain=domain_values)],
+        ['sine wave motion', sine_motion(domain_values, len1)],
+        ['linear horizontal motion', horizontal_motion(domain_values, len1)],
+        ['linear diagonal motion', (domain_values, domain_values)],
+        ['absolute value motion', (domain_values, absolute_value(domain_values))],
+        ['diamond motion', diamond(domain_values)],
+        ['vertical zigzag motion', (domain_values, vert_zigzag(domain_values))],
+        ['horizontal back and forth motion', horiz_backforth(len1, sample_size)],
+        ['stationary dot, no motion', (no_motion(domain_values, len1), no_motion(domain_values, len1))],
+        ['sine wave back and forth motion', sinebackforth(domain_values, len1)]
+    ]
+    for data in input_list:
+        motion = data[0]
+        x_values, y_values = data[1]
+        generate_samples(motion, x_values, y_values, len1, len2, radius, color)
+        generate_gif(motion)

@@ -1,10 +1,8 @@
-import os
 import math
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
-import gudhi
 
 
 def create_base_plot(persistence_points, title, max_dim=1):

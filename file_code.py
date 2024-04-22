@@ -165,7 +165,7 @@ def get_sample_data(sample_dirs, dir_index, file_names, transform_type=None, max
         all_png_data = np.zeros((sample_size, new_width * new_height), int)
         for index in range(sample_size):
             temp_data = pil_img.open(sample_dirs[dir_index] + '/' + file_names[index])
-            temp_data = temp_data.resize((new_width, new_height), pil_img.Resampling.LANCZOS)
+            temp_data = temp_data.resize((new_width, new_height))
             temp_data = np.asarray(temp_data.convert('L')).flatten()
             all_png_data[index, :] = temp_data[:, ]
         save_motion_overlay(all_png_data, sample_size, new_height, new_width, sample_dirs, dir_index)
