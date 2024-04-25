@@ -3,10 +3,7 @@ import math
 from collections import defaultdict
 import numpy as np
 import PIL.Image as pil_img
-import matplotlib.pyplot as plt
 import pickle as pkl
-import gudhi
-import persdia_creator as pc
 
 
 PWD = os.getcwd()
@@ -126,22 +123,22 @@ def save_motion_overlay(all_png_data, sample_size, new_height, new_width, sample
     stacked_image_pil.save(os.getcwd() + '/' + sample_dirs[dir_index] + '/' + overlay_save_name + '.jpg')
     stacked_image_pil.close()
 
-    gudhi_complex = gudhi.RipsComplex(points=stacked_image)
-    simplex_tree = gudhi_complex.create_simplex_tree(max_dimension=2)
-    persistence_points = simplex_tree.persistence()
-    pc.save_persistence_points(
-        persistence_points,
-        os.getcwd() + '/' + sample_dirs[dir_index] + '/' + motion_name + ' overlay persdia points.txt'
-    )
-    gudhi.plot_persistence_diagram(persistence_points)
-    pc.plot_persdia_main(
-        persistence_points,
-        motion_name + ' images overlay',
-        os.getcwd() + '/' + sample_dirs[dir_index] + '/' + overlay_save_name + 'persdia.jpg',
-        show_plot=False
-    )
-    plt.clf()
-    plt.close()
+    # gudhi_complex = gudhi.RipsComplex(points=stacked_image)
+    # simplex_tree = gudhi_complex.create_simplex_tree(max_dimension=2)
+    # persistence_points = simplex_tree.persistence()
+    # pc.save_persistence_points(
+    #     persistence_points,
+    #     os.getcwd() + '/' + sample_dirs[dir_index] + '/' + motion_name + ' overlay persdia points.txt'
+    # )
+    # gudhi.plot_persistence_diagram(persistence_points)
+    # pc.plot_persdia_main(
+    #     persistence_points,
+    #     motion_name + ' images overlay',
+    #     os.getcwd() + '/' + sample_dirs[dir_index] + '/' + overlay_save_name + 'persdia.svg',
+    #     show_plot=False
+    # )
+    # plt.clf()
+    # plt.close()
 
 
 def get_sample_data(sample_dirs, dir_index, file_names, transform_type=None, max_dim=100):

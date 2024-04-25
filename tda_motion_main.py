@@ -4,7 +4,6 @@ import pickle as pkl
 import image_preprocessing as ipp
 import file_code as fc
 import persdia_creator as pc
-import image_generator
 
 
 def load_preprocess_data(sample_directories, transform_type, svd_pkl_string='reduced_data'):
